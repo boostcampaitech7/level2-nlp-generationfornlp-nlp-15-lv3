@@ -2,5 +2,5 @@
     remote = default
 ['remote "default"']
     url = gdrive://1hDrO4iS6ytS3AkHInh2NtS3FvBNwoVJ9
-    gdrive_service_account_json_file_path = /data/ephemeral/home/jduck/.dvc/credential/gdrive_cred.json
+    gdrive_service_account_json_file_path = ./credential/gdrive_cred.json
     gdrive_use_service_account = true
