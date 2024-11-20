@@ -10,6 +10,8 @@ from transformers import BitsAndBytesConfig
 from ast import literal_eval
 import evaluate
 
+import os
+
 from constants import *
 
 def load_config(config_path):
