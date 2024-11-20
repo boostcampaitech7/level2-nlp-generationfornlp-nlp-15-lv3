@@ -10,6 +10,8 @@ from transformers import BitsAndBytesConfig
 from ast import literal_eval
 import evaluate
 
+from constants import *
+
 def load_config(config_path):
     with open(config_path, 'r') as file:
         return yaml.safe_load(file)
@@ -150,11 +152,13 @@ def setup_trainer(model, tokenizer, train_dataset, eval_dataset, config):
     return trainer
 
 if __name__ == "__main__":
-    config = load_config("config.yaml")
+    config = load_config(TRAIN_CONFIG)
     set_seed(config['seed'])
 
     # Load model and tokenizer
     model, tokenizer = load_model(config)
+    
+    config['data']['dataset_path'] = os.path.join(DATA_DIR,'train.csv')
 
     # Preprocess dataset
     datasets = preprocess_dataset(config, tokenizer)

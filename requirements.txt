@@ -9,3 +9,4 @@ evaluate
 peft
 dvc
 dvc-gdrive
+bitsandbytes
