@@ -118,6 +118,8 @@ def setup_trainer(model, tokenizer, train_dataset, eval_dataset, config):
         response_template="<start_of_turn>model",
         tokenizer=tokenizer
     )
+    
+    config['training']['learning_rate'] = float(config['training']['learning_rate'])
 
     acc_metric = evaluate.load("accuracy")
 
@@ -156,7 +158,7 @@ def setup_trainer(model, tokenizer, train_dataset, eval_dataset, config):
 if __name__ == "__main__":
     config = load_config(TRAIN_CONFIG)
     set_seed(config['seed'])
-
+    
     # Load model and tokenizer
     model, tokenizer = load_model(config)
     

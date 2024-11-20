@@ -10,4 +10,4 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 
 CONFIG_DIR = os.path.join(BASE_DIR, 'configs')
-TRAIN_CONFIG = os.path.join(BASE_DIR, 'config.yaml')
+TRAIN_CONFIG = os.path.join(CONFIG_DIR, 'config.yaml')

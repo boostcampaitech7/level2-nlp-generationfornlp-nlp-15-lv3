@@ -22,7 +22,7 @@ training:
     train: 2                         # 훈련 배치 크기
     eval: 1                          # 평가 배치 크기
   epochs: 3                          # 에폭 수
-  learning_rate: 1e-5                # 학습률
+  learning_rate: 1.0e-5                # 학습률
   weight_decay: 0.01                 # Weight Decay
   logging_steps: 1                   # 로깅 간격
   save_strategy: "epoch"             # 저장 전략
