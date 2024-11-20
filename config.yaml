@@ -19,19 +19,19 @@ peft:
 training:
   output_dir: "outputs_gemma"        # 출력 디렉토리
   batch_size: 
-    train: 2                         # 훈련 배치 크기
+    train: 1                         # 훈련 배치 크기
     eval: 1                          # 평가 배치 크기
   epochs: 3                          # 에폭 수
-  learning_rate: 1e-5                # 학습률
+  learning_rate: 0.00005                # 학습률
   weight_decay: 0.01                 # Weight Decay
-  logging_steps: 1                   # 로깅 간격
+  logging_steps: 1000                   # 로깅 간격
   save_strategy: "epoch"             # 저장 전략
   eval_strategy: "epoch"             # 평가 전략
   save_total_limit: 2                # 저장 파일 개수 제한
   fp16: true                         # Mixed Precision 사용 여부
 
 data:
-  dataset_path: "/data/ephemeral/code/data/train.csv"  # 데이터 경로
+  dataset_path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/data/train.csv"  # 데이터 경로
   max_seq_length: 1024                                # 최대 시퀀스 길이
   test_split_ratio: 0.1                               # 테스트 데이터 비율
 

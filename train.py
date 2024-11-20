@@ -49,6 +49,8 @@ def load_model(config):
     tokenizer.pad_token_id = tokenizer.eos_token_id
     tokenizer.padding_side = 'right'
 
+    tokenizer.chat_template = "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}{% if system_message is defined %}{{ system_message }}{% endif %}{% for message in messages %}{% set content = message['content'] %}{% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}"
+
     # Apply PEFT if enabled
     if config['peft']['enable']:
         peft_config = LoraConfig(
@@ -86,11 +88,31 @@ def preprocess_dataset(config, tokenizer):
     df['full_question'] = df.apply(
         lambda x: x['question'] + ' ' + x['question_plus'] if x['question_plus'] else x['question'], axis=1
     )
-    processed_dataset = Dataset.from_pandas(df)
 
+    # 데이터 전처리: 템플릿 적용
+    def process_data(row):
+        user_message = f"<start_of_turn>user\n{row['full_question']}<end_of_turn>"
+        assistant_message = f"<start_of_turn>model\n{row['answer']}<end_of_turn>"
+        return {
+            "messages": [
+                {"role": "user", "content": user_message},
+                {"role": "assistant", "content": assistant_message},
+            ]
+        }
+
+    processed_dataset = Dataset.from_list([process_data(row) for _, row in df.iterrows()])
+
+    # 템플릿 유효성 검증
+    def is_valid_example(example):
+        return isinstance(example["messages"][0]["content"], str)
+
+    processed_dataset = processed_dataset.filter(is_valid_example, batched=False)
+
+    # 토큰화
     def tokenize(example):
+        formatted_text = tokenizer.apply_chat_template(example["messages"], tokenize=False)
         outputs = tokenizer(
-            example['full_question'],
+            formatted_text,
             truncation=True,
             max_length=max_seq_length,
             padding='max_length',
@@ -104,6 +126,8 @@ def preprocess_dataset(config, tokenizer):
         desc="Tokenizing"
     )
     return tokenized_dataset.train_test_split(test_size=test_split_ratio, seed=config['seed'])
+
+
 
 def setup_trainer(model, tokenizer, train_dataset, eval_dataset, config):
     output_dir = config['training']['output_dir']
