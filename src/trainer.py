@@ -18,10 +18,9 @@ class MainTrainer():
     def __init__(self, train_args:dict):
         #모델, 토크나이저 로드
         self.model = AutoModelForCausalLM.from_pretrained(
-        train_args['model'],
-        torch_dtype=torch.float16,
-        trust_remote_code=True,
-        
+            train_args['model'],
+            #torch_dtype=torch.float16, #float16 활성화 옵션. ko-gemma2B는 기본적으로 bf16
+            trust_remote_code=True,
         )
         self.set_tokenizer(train_args['tokenizer'])
 
