@@ -7,3 +7,5 @@
 /.nv
 /.vscode
 /data
+
+__pycache__
