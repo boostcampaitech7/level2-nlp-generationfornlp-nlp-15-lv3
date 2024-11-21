@@ -1,0 +1,37 @@
+checkpoint:
+  path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/src/outputs_gemma/checkpoint-5481"  # 학습된 모델 체크포인트 경로
+
+data:
+  test_path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/data/test.csv"  # 테스트 데이터 경로
+
+prompts:
+  prompt_question_plus: |
+    지문:
+    {paragraph}
+
+    질문:
+    {question}
+
+    <보기>:
+    {question_plus}
+
+    선택지:
+    {choices}
+
+    1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+    정답:
+  prompt_no_question_plus: |
+    지문:
+    {paragraph}
+
+    질문:
+    {question}
+
+    선택지:
+    {choices}
+
+    1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
+    정답:
+
+output:
+  path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/data/output1.csv"  # 추론 결과를 저장할 파일 경로
