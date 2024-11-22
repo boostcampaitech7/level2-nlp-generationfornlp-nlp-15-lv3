@@ -1,0 +1,8 @@
+data_path: '../data/'
+train_data_file: "train.csv"
+test_data_file: "test.csv"
+
+model_path: '../model/'
+output_dir: '../model/'
+
+model_name: "../model/outputs_gemma_base/checkpoint-4491"

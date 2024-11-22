@@ -1,0 +1,11 @@
+documents: []
+emb_name: "sentence-transformers/all-mpnet-base-v2"
+faiss_folder_path: "../data/faiss_index"
+
+llm_name: "../model/outputs_gemma_base/checkpoint-4491"
+task: "text-generation"
+batch_size: 1
+device_map: "auto"
+max_new_tokens: 200
+
+k: 1
