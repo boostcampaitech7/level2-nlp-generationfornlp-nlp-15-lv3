@@ -3,19 +3,15 @@ import yaml
 import torch
 from peft import get_peft_model, AutoPeftModelForCausalLM
 from transformers import AutoTokenizer
-from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 import numpy as np
-import evaluate
-import utils
-from torch.utils.data import DataLoader
 
 import pandas as pd
 
-import os
-
 from constants import *
+import utils
 from dataprocessor import DataProcessor
 
+utils.set_seed(42)
 class inferrer():
     def __init__(self,eval_args:dict):        
         #모델, 토크나이저 로드
@@ -30,13 +26,13 @@ class inferrer():
             trust_remote_code=True,
         )
         
+        
         dataloader = DataProcessor(datapath=eval_args['test_data'], tokenizer=self.tokenizer)
 
 
         infer_results = []
 
         pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}
-        batch_size = 16  # 배치 사이즈 설정
 
         self.model.eval()
         with torch.inference_mode():

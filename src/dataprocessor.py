@@ -65,7 +65,8 @@ class DataProcessor():
                     "messages": [
                         {"role": "system", "content": "지문을 읽고 질문의 답을 구하세요."},
                         {"role": "user", "content": user_message},
-                        {"role": "assistant", "content": f"{row['answer']}"}
+                        *([{"role": "assistant", "content": f"{row['answer']}"}] if row['answer'] else [])  
+                        # answer레이블없으면 추론이므로 assistant 메세지를 미포함 
                     ],
                     "label": row["answer"],
                     "len_choices": len_choices, 
