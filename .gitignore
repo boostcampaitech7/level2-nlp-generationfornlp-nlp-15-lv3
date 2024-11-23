@@ -7,3 +7,7 @@
 /.nv
 /.vscode
 /data
+
+__pycache__
+outputs_gemma
+outputs

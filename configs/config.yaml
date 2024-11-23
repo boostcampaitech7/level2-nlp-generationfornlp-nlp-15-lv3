@@ -1,0 +1,38 @@
+model:
+  name: "beomi/gemma-ko-7b"          # 모델 이름
+  trust_remote_code: true            # 원격 코드 신뢰 여부
+
+quantization:
+  enable: true
+  bits: 8
+  fp32_cpu_offload: true
+
+
+peft:
+  enable: true                       # PEFT 활성화 여부
+  r: 8                               # LoRA의 랭크
+  lora_alpha: 32                     # LoRA 알파 값
+  lora_dropout: 0.1                  # LoRA 드롭아웃 비율
+  target_modules: ["q_proj", "v_proj"] # PEFT 적용 모듈
+  task_type: "CAUSAL_LM"             # 작업 유형
+
+training:
+  output_dir: "outputs_gemma"        # 출력 디렉토리
+  batch_size: 
+    train: 2                         # 훈련 배치 크기
+    eval: 1                          # 평가 배치 크기
+  epochs: 3                          # 에폭 수
+  learning_rate: 1.0e-5                # 학습률
+  weight_decay: 0.01                 # Weight Decay
+  logging_steps: 1                   # 로깅 간격
+  save_strategy: "epoch"             # 저장 전략
+  eval_strategy: "epoch"             # 평가 전략
+  save_total_limit: 2                # 저장 파일 개수 제한
+  fp16: true                         # Mixed Precision 사용 여부
+
+data:
+  dataset_path: "/data/ephemeral/code/data/train.csv"  # 데이터 경로
+  max_seq_length: 1024                                # 최대 시퀀스 길이
+  test_split_ratio: 0.1                               # 테스트 데이터 비율
+
+seed: 42                                              # 난수 시드
