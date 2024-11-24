@@ -1,0 +1,16 @@
+data_path: '../data/'
+train_data_file: "train.csv"
+test_data_file: "test.csv"
+
+model_path: '../model/'
+output_dir: '../model/'
+
+use_hint: True
+
+model_name: "maywell/EXAONE-3.0-7.8B-Instruct-Llamafied"
+device_map: "auto"
+batch_size: 1
+num_train_epochs: 3
+max_seq_length: 9999
+max_new_tokens: 100
+use_lora: True
