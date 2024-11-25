@@ -24,6 +24,6 @@ use_gptq: False
 use_gradient_checkpointing: False
 use_mx_fp16: False
 use_fp16: True
-use_quant: False
+use_quant: True
 use_lora: True
 use_hint: True
