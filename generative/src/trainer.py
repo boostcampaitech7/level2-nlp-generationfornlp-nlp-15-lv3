@@ -63,15 +63,13 @@ def get_model(config):
     #quantization_config = bnb.nn.LinearNF4()
     
     # NF4 양자화를 위한 설정
-    """
     quantization_config = BitsAndBytesConfig(
         load_in_4bit=True, # 모델을 4비트 정밀도로 로드
         bnb_4bit_quant_type="nf4", # 4비트 NormalFloat 양자화: 양자화된 파라미터의 분포 범위를 정규분포 내로 억제하여 정밀도 저하 방지
         bnb_4bit_use_double_quant=True, # 이중 양자화: 양자화를 적용하는 정수에 대해서도 양자화 적용
         bnb_4bit_compute_dtype=torch.bfloat16 # 연산 속도를 높이기 위해 사용 (default: torch.float32)
     )
-    """
-
+    
     if config['use_gptq']:
         """
         # 모델 로드 (기본 모델을 훈련된 GPT 모델로 대체)
@@ -674,10 +672,11 @@ class LLM:
         )
         print(self.sft_config)
 
-        # 양자화된 모델을 학습하기 전, 전처리를 위해 호출
-        #self.model = prepare_model_for_kbit_training(self.model)
-        # LoRA 학습을 위해서는 아래와 같이 peft를 사용하여 모델을 wrapping 해주어야 함
-        #self.model = get_peft_model(self.model, self.lora_config)
+        if self.use_lora:
+            # 양자화된 모델을 학습하기 전, 전처리를 위해 호출
+            self.model = prepare_model_for_kbit_training(self.model)
+            # LoRA 학습을 위해서는 아래와 같이 peft를 사용하여 모델을 wrapping 해주어야 함
+            self.model = get_peft_model(self.model, self.lora_config)
 
         self.trainer = SFTTrainer(
             model=self.model,
@@ -820,6 +819,10 @@ class LLM:
                 if c==n:break
 
         print(infer_results)        
+
+    def save(self):
+        self.trainer.save_model(self.output_dir+self.model_name)
+        self.tokenizer.save_pretrained(self.output_dir+self.model_name)
 
 if __name__ == "__main__":
     config = None
