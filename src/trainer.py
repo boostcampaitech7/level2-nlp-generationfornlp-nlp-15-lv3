@@ -1,7 +1,7 @@
 import yaml
 import torch
 from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 import numpy as np
 import evaluate
@@ -17,49 +17,19 @@ utils.set_seed(42)
 class MainTrainer():
     def __init__(self, train_args:dict):
         #모델, 토크나이저 로드
-        self.model = AutoModelForCausalLM.from_pretrained(
-            train_args['model'],
-            #torch_dtype=torch.float16, #float16 활성화 옵션. ko-gemma2B는 기본적으로 bf16
-            trust_remote_code=True,
-        )
-        self.set_tokenizer(train_args['tokenizer'])
+        self.model =     self.get_model(train_args.get("model"))
+        self.tokenizer = self.get_tokenizer(train_args.get("model").get('tokenizer'))
 
         #데이터셋 로드
-        dataprocessor = DataProcessor(train_args['train_data'],self.tokenizer)
-        train_dataset, eval_dataset = dataprocessor.data_separator(0.1)
+        dataprocessor = DataProcessor(train_args.get("data"),self.tokenizer)
+        train_dataset, eval_dataset = dataprocessor.get_separated()
         
-        #LoRA 설정
-        peft_config = LoraConfig(
-            r=6,
-            lora_alpha=8,
-            lora_dropout=0.05,
-            target_modules=['q_proj', 'k_proj'],
-            bias="none",
-            task_type="CAUSAL_LM",
-        )
-        
+      
         self.set_metrics()
         
         #트레이너 설정
-        sft_config = SFTConfig(
-            do_train=True,
-            do_eval=True,
-            lr_scheduler_type="cosine",
-            max_seq_length=1024,
-            output_dir=train_args['outputs_path'], 
-            per_device_train_batch_size=1,
-            per_device_eval_batch_size=1,
-            num_train_epochs=3,
-            learning_rate=2e-5,
-            weight_decay=0.01,
-            logging_steps=1,
-            save_strategy="epoch",
-            eval_strategy="epoch",
-            save_total_limit=2,
-            save_only_model=True,
-            report_to="none",
-        )
-
+        sft_config = self.get_sft_config(train_args.get("training"))
+        
         self.trainer = SFTTrainer(
             model=self.model,
             train_dataset=train_dataset,
@@ -68,27 +38,68 @@ class MainTrainer():
             tokenizer=self.tokenizer,
             compute_metrics=self.compute_metrics,
             preprocess_logits_for_metrics=self.preprocess_logits_for_metrics,
-            peft_config=peft_config,
             args=sft_config,
         )
         
         return
+      
     
     def train(self):
         self.trainer.train()
         return
     
-    def set_tokenizer(self, tokenizer):
+    def get_tokenizer(self, config):
         tokenizer = AutoTokenizer.from_pretrained(
-            tokenizer,
+            config['name'],
             trust_remote_code=True,
         )
-        tokenizer.chat_template = CHAT_TEMPLATE
+        tokenizer.chat_template = config['chat_template']
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
-        tokenizer.padding_side = 'right'
-        self.tokenizer = tokenizer        
-        return
+        tokenizer.padding_side = config['padding_side']        
+        return tokenizer
+    
+    def get_model(self, config):
+        model_name = config["name"]
+        trust_remote_code = config["trust_remote_code"]
+
+        # YAML에서 양자화 설정 가져오기
+        quantization = config.get("quantization", {})
+        if quantization.get("enable", False):  # 양자화가 활성화된 경우
+            quantization_config = BitsAndBytesConfig(
+                load_in_4bit=quantization.get("load_in_4bit", True),
+                bnb_4bit_compute_dtype=torch.__dict__.get(quantization.get("bnb_4bit_compute_dtype", "float16")),
+                bnb_4bit_use_double_quant=quantization.get("bnb_4bit_use_double_quant", True),
+                bnb_4bit_quant_type=quantization.get("bnb_4bit_quant_type", "nf4"),
+            )
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                trust_remote_code=trust_remote_code,
+                quantization_config=quantization_config,
+                config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+            )
+        else:  # 양자화가 비활성화된 경우
+            model = AutoModelForCausalLM.from_pretrained(
+                model_name,
+                trust_remote_code=trust_remote_code,
+                config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+            )
+            
+        # PEFT 설정
+        peft = config.get("peft", {})
+        if peft.get("enable", True):
+            lora_config = LoraConfig(
+                r=peft["r"],
+                lora_alpha=peft["lora_alpha"],
+                lora_dropout=peft["lora_dropout"],
+                target_modules=peft["target_modules"],
+                task_type=peft["task_type"],
+                bias=peft["bias"]
+            )
+            model = get_peft_model(model, lora_config)
+        
+        return model
+
     
     def set_metrics(self):
         #TODO metric 설정 좀 더 확실하게
@@ -128,5 +139,20 @@ class MainTrainer():
         return DataCollatorForCompletionOnlyLM(
             response_template=response_template,
             tokenizer=self.tokenizer,
+        )
+    
+    def get_sft_config(self, config):
+        return SFTConfig(
+        output_dir=OUTPUT_DIR,
+        per_device_train_batch_size=config["batch_size"]["train"],
+        per_device_eval_batch_size=config["batch_size"]["eval"],
+        num_train_epochs=config["epochs"],
+        learning_rate=config["learning_rate"],
+        weight_decay=config["weight_decay"],
+        logging_steps=config["logging_steps"],
+        save_strategy=config["save_strategy"],
+        eval_strategy=config["eval_strategy"],
+        save_total_limit=config["save_total_limit"],
+        fp16=config["fp16"],
         )
         

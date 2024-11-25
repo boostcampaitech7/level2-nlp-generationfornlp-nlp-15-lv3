@@ -1,5 +1,5 @@
 model:
-  name: "beomi/gemma-ko-7b"  # 사용할 모델 이름
+  name: "beomi/gemma-ko-2b"  # 사용할 모델 이름
   trust_remote_code: true                                  # 원격 코드 신뢰 여부
   quantization:                                            # 4비트 양자화 관련 설정 추가
     enable: true                                           # 양자화 활성화
@@ -7,14 +7,23 @@ model:
     bnb_4bit_compute_dtype: "float16"                      # 연산에 사용할 데이터 타입
     bnb_4bit_use_double_quant: true                        # 더블 양자화 활성화 여부
     bnb_4bit_quant_type: "nf4"                             # 양자화 유형 (nf4 또는 fp4 중 선택)
-
-peft:
-  enable: true                       # PEFT 활성화 여부
-  r: 16                              # LoRA의 랭크
-  lora_alpha: 16                     # LoRA 알파 값
-  lora_dropout: 0.05                 # LoRA 드롭아웃 비율
-  target_modules: ["q_proj", "k_proj"] # PEFT가 적용될 타겟 모듈
-  task_type: "CAUSAL_LM"             # PEFT 작업 유형
+  tokenizer:
+    name: "beomi/gemma-ko-2b" # 사용할 토크나이저
+    padding_side: "right"     # 패딩 방향
+    chat_template: |
+      {% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}
+      {% if system_message is defined %}{{ system_message }}{% endif %}
+      {% for message in messages %}{% set content = message['content'] %}
+      {% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}
+      {% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}
+  peft:
+    enable: true                       # PEFT 활성화 여부
+    r: 16                              # LoRA의 랭크
+    lora_alpha: 16                     # LoRA 알파 값
+    lora_dropout: 0.05                 # LoRA 드롭아웃 비율
+    target_modules: ["q_proj", "k_proj"] # PEFT가 적용될 타겟 모듈
+    task_type: "CAUSAL_LM"             # PEFT 작업 유형
+    bias: "none"                       # 편향
 
 training:
   output_dir: "outputs_gemma"        # 출력 디렉토리 경로
@@ -31,7 +40,7 @@ training:
   fp16: true                         # Mixed Precision 사용 여부
 
 data:
-  dataset_path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/data/train.csv"  # 데이터셋 경로
+  dataset_name: "train.csv"  # 데이터셋 파일명
   max_seq_length: 2048                                # 입력 데이터의 최대 시퀀스 길이
   test_split_ratio: 0.1                               # 테스트 데이터 비율
 

@@ -1,15 +1,17 @@
+import os
 import pandas as pd
 from ast import literal_eval
 from datasets import Dataset
+from transformers import AutoTokenizer
 
-from constants import PROMPT_QUESTION_PLUS, PROMPT_NO_QUESTION_PLUS
+from constants import PROMPT_QUESTION_PLUS, PROMPT_NO_QUESTION_PLUS, DATA_DIR
 
 
 class DataProcessor():
-    def __init__(self, datapath:str, tokenizer):
+    def __init__(self, config, tokenizer:AutoTokenizer):
         self.tokenizer = tokenizer
-        
-        dataset = pd.read_csv(datapath) 
+        self.config = config
+        dataset = pd.read_csv(os.path.join(DATA_DIR, config["dataset_name"])) 
         
         #TODO: 변수명 정리, 파이프라인 별도 함수화 필요
         # Flatten the JSON dataset
@@ -59,6 +61,7 @@ class DataProcessor():
                 )
 
             # chat message 형식으로 변환
+            #TODO: config로 빼기
             processed_dataset.append(
                 {
                     "id": row["id"],
@@ -97,6 +100,7 @@ class DataProcessor():
             self.formatting_prompts_func(element),
             truncation=False,
             padding=False,
+            max_length=self.config["max_seq_length"],
             return_overflowing_tokens=False,
             return_length=False,
         )
@@ -125,3 +129,6 @@ class DataProcessor():
         train_dataset = dataset['train']
         eval_dataset = dataset['test']
         return train_dataset, eval_dataset
+
+    def get_separated(self):
+        return self.data_separator(self.config["test_split_ratio"])
