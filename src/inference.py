@@ -8,14 +8,15 @@ from tqdm import tqdm
 import yaml
 from constants import *
 
+
 def load_config(config_path):
-    #YAML 파일에서 설정을 로드
+    # YAML 파일에서 설정을 로드
     with open(config_path, "r") as file:
         return yaml.safe_load(file)
 
 
 def load_model(config):
-    #체크포인트에서 학습된 모델과 토크나이저를 로드
+    # 체크포인트에서 학습된 모델과 토크나이저를 로드
     checkpoint_path = config["checkpoint"]["path"]
     model = AutoPeftModelForCausalLM.from_pretrained(
         checkpoint_path,
@@ -30,7 +31,7 @@ def load_model(config):
 
 
 def preprocess_test_data(config):
-    #테스트 데이터셋을 로드하고 전처리
+    # 테스트 데이터셋을 로드하고 전처리
     test_data_path = config["data"]["test_path"]
     test_df = pd.read_csv(test_data_path)
 
@@ -53,7 +54,7 @@ def preprocess_test_data(config):
 
 
 def create_test_dataset(test_df, prompt_question_plus, prompt_no_question_plus):
-    #테스트 데이터
+    # 테스트 데이터
     test_dataset = []
     for _, row in test_df.iterrows():
         # 선택지 문자열 생성
@@ -90,16 +91,14 @@ def create_test_dataset(test_df, prompt_question_plus, prompt_no_question_plus):
 
 
 def inference(model, tokenizer, test_dataset, output_path):
-    #테스트 데이터에 대해 추론을 수행하고 결과를 저장.
+    # 테스트 데이터에 대해 추론을 수행하고 결과를 저장
     infer_results = []
-    pred_choices_map = {0: "1", 1: "2", 2: "3", 3: "4", 4: "5"}  # 예측 값 매핑
 
     model.eval()  # 모델을 평가 모드로 설정
     with torch.inference_mode():  # 추론 모드 활성화 (Gradient 계산 비활성화)
         for data in tqdm(test_dataset):  # 진행 상황을 표시하며 데이터 순회
             _id = data["id"]
             messages = data["messages"]
-            len_choices = data["len_choices"]
 
             # 입력 데이터를 토크나이저로 변환
             inputs = tokenizer.apply_chat_template(
@@ -107,30 +106,52 @@ def inference(model, tokenizer, test_dataset, output_path):
                 tokenize=True,
                 add_generation_prompt=True,
                 return_tensors="pt",
-            ).to("cuda")  # GPU로 이동
-
-            # 모델 추론
-            outputs = model(inputs)
-            logits = outputs.logits[:, -1].flatten().cpu()  # 마지막 출력 로짓 가져오기
-
-            target_logit_list = [logits[tokenizer.vocab[str(i + 1)]] for i in range(len_choices)]
-
-            # 소프트맥스를 통해 확률 계산
-            probs = (
-                torch.nn.functional.softmax(
-                    torch.tensor(target_logit_list, dtype=torch.float32)
-                )
-                .detach()
-                .cpu()
-                .numpy()
             )
 
-            predict_value = pred_choices_map[np.argmax(probs, axis=-1)]
+            # Tensor로 처리
+            if isinstance(inputs, torch.Tensor):
+                input_ids = inputs.to("cuda")  # GPU로 이동
+                attention_mask = (input_ids != tokenizer.pad_token_id).to(torch.long).to("cuda")
+            elif isinstance(inputs, dict) and "input_ids" in inputs:
+                input_ids = inputs["input_ids"].to("cuda")
+                attention_mask = inputs.get(
+                    "attention_mask",
+                    (input_ids != tokenizer.pad_token_id).to(torch.long).to("cuda"),
+                )
+            else:
+                print("Error: Unexpected inputs format")
+                print(inputs)  # 디버깅용 전체 출력
+                continue
+
+            # 모델로 텍스트 생성
+            outputs = model.generate(
+                input_ids,
+                attention_mask=attention_mask,  # 명시적으로 attention_mask 전달
+                max_new_tokens=50,  # 생성할 최대 토큰 수 (필요에 따라 조정)
+                temperature=0.7,  # 텍스트 다양성을 조정
+                top_p=0.9,  # nucleus sampling 비율
+                do_sample=True,  # 샘플링 활성화
+                num_return_sequences=1,  # 한 번에 생성할 출력 수
+            )
+
+            # 생성된 텍스트를 디코딩
+            generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+            # 예측값 추출 (생성된 텍스트에서 특정 포맷을 찾는 방식 사용)
+            predict_value = None
+            for choice in range(1, data["len_choices"] + 1):
+                if str(choice) in generated_text:
+                    predict_value = str(choice)
+                    break
+
+            # 예측값을 저장
             infer_results.append({"id": _id, "answer": predict_value})
 
     # 결과를 CSV 파일로 저장
     pd.DataFrame(infer_results).to_csv(output_path, index=False)
     return infer_results
+
+
 
 
 if __name__ == "__main__":

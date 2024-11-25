@@ -1,5 +1,5 @@
 checkpoint:
-  path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/src/outputs_gemma/checkpoint-5481"  # 학습된 모델 체크포인트 경로
+  path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/src/outputs_gemma/checkpoint-1827"  # 학습된 모델 체크포인트 경로
 
 data:
   test_path: "/data/ephemeral/level2-nlp-generationfornlp-nlp-15-lv3/data/test.csv"  # 테스트 데이터 경로

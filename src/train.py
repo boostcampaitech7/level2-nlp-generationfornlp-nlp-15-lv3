@@ -1,6 +1,6 @@
 import yaml
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from datasets import Dataset
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 from peft import LoraConfig, get_peft_model
@@ -31,18 +31,34 @@ def load_model_and_tokenizer(config):
     model_name = config["model"]["name"]
     trust_remote_code = config["model"]["trust_remote_code"]
 
-    # 모델과 토크나이저 초기화 (FP16 설정)
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        trust_remote_code=trust_remote_code,
-        torch_dtype=torch.float16,  # FP16 활성화
-    )
+    # YAML에서 양자화 설정 가져오기
+    quantization = config.get("model", {}).get("quantization", {})
+    if quantization.get("enable", False):  # 양자화가 활성화된 경우
+        quantization_config = BitsAndBytesConfig(
+            load_in_4bit=quantization.get("load_in_4bit", True),
+            bnb_4bit_compute_dtype=torch.__dict__.get(quantization.get("bnb_4bit_compute_dtype", "float16")),
+            bnb_4bit_use_double_quant=quantization.get("bnb_4bit_use_double_quant", True),
+            bnb_4bit_quant_type=quantization.get("bnb_4bit_quant_type", "nf4"),
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            trust_remote_code=trust_remote_code,
+            quantization_config=quantization_config,
+            config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+        )
+    else:  # 양자화가 비활성화된 경우
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            trust_remote_code=trust_remote_code,
+            config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+        )
+
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=trust_remote_code)
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.pad_token_id = tokenizer.eos_token_id
     tokenizer.padding_side = "right"
 
-    # Chat Template 설정
+    # chat_template 설정
     tokenizer.chat_template = (
         "{% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}"
         "{% if system_message is defined %}{{ system_message }}{% endif %}"
@@ -51,7 +67,7 @@ def load_model_and_tokenizer(config):
         "{% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}"
     )
 
-    # PEFT 설정 확인 및 적용
+    # PEFT 설정
     if config.get("peft", {}).get("enable", True):
         lora_config = LoraConfig(
             r=config["peft"]["r"],
@@ -63,6 +79,7 @@ def load_model_and_tokenizer(config):
         model = get_peft_model(model, lora_config)
 
     return model, tokenizer
+
 
 # 데이터 전처리
 def preprocess_dataset(config):
@@ -175,16 +192,13 @@ def setup_trainer(model, tokenizer, train_dataset, eval_dataset, config):
         logits = logits[:, -1, choice_token_ids]  # 마지막 토큰 기준
         return logits
 
-
     def compute_metrics(eval_pred):
         logits, labels = eval_pred
 
         # 레이블 데이터 처리
         labels = np.where(labels != -100, labels, tokenizer.pad_token_id)  # -100은 무시하도록 설정
         labels = tokenizer.batch_decode(labels, skip_special_tokens=True)  # 디코딩
-        # "<end_of_turn>" 같은 불필요한 텍스트 제거
         labels = [label.split("<end_of_turn>")[0].strip() for label in labels]
-        # 정수로 변환하여 references 생성
         references = [int(label) - 1 for label in labels]
 
         # logits 데이터 처리
@@ -194,7 +208,6 @@ def setup_trainer(model, tokenizer, train_dataset, eval_dataset, config):
         # 정확도 계산
         acc_metric = evaluate.load("accuracy")
         return acc_metric.compute(predictions=predictions, references=references)
-
 
     trainer_config = SFTConfig(
         output_dir=config["training"]["output_dir"],
