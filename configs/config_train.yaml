@@ -1,14 +1,16 @@
 model:
-  name: "beomi/gemma-ko-2b"  # 사용할 모델 이름
+  name: "beomi/gemma-ko-7b"  # 사용할 모델 이름
   trust_remote_code: true                                  # 원격 코드 신뢰 여부
+
   quantization:                                            # 4비트 양자화 관련 설정 추가
     enable: true                                           # 양자화 활성화
     load_in_4bit: true                                     # 4비트로 모델 로드
-    bnb_4bit_compute_dtype: "float16"                      # 연산에 사용할 데이터 타입
+    bnb_4bit_compute_dtype: "bfloat16"                      # 연산에 사용할 데이터 타입
     bnb_4bit_use_double_quant: true                        # 더블 양자화 활성화 여부
     bnb_4bit_quant_type: "nf4"                             # 양자화 유형 (nf4 또는 fp4 중 선택)
+    
   tokenizer:
-    name: "beomi/gemma-ko-2b" # 사용할 토크나이저
+    name: "beomi/gemma-ko-7b" # 사용할 토크나이저
     padding_side: "right"     # 패딩 방향
     chat_template: |
       {% if messages[0]['role'] == 'system' %}{% set system_message = messages[0]['content'] %}{% endif %}
@@ -24,6 +26,8 @@ model:
     target_modules: ["q_proj", "k_proj"] # PEFT가 적용될 타겟 모듈
     task_type: "CAUSAL_LM"             # PEFT 작업 유형
     bias: "none"                       # 편향
+  deepspeed:
+    config: "ds_config.json"           # Deepspeed 설정 파일
 
 training:
   output_dir: "outputs_gemma"        # 출력 디렉토리 경로

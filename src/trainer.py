@@ -17,8 +17,8 @@ utils.set_seed(42)
 class MainTrainer():
     def __init__(self, train_args:dict):
         #모델, 토크나이저 로드
-        self.model =     self.get_model(train_args.get("model"))
-        self.tokenizer = self.get_tokenizer(train_args.get("model").get('tokenizer'))
+        self.model =     self.get_model(train_args["model"])
+        self.tokenizer = self.get_tokenizer(train_args["model"].get("tokenizer", None))
 
         #데이터셋 로드
         dataprocessor = DataProcessor(train_args.get("data"),self.tokenizer)
@@ -28,7 +28,7 @@ class MainTrainer():
         self.set_metrics()
         
         #트레이너 설정
-        sft_config = self.get_sft_config(train_args.get("training"))
+        sft_config = self.get_sft_config(train_args["training"])
         
         self.trainer = SFTTrainer(
             model=self.model,
@@ -62,6 +62,9 @@ class MainTrainer():
     def get_model(self, config):
         model_name = config["name"]
         trust_remote_code = config["trust_remote_code"]
+        
+        print("loading model")
+        
 
         # YAML에서 양자화 설정 가져오기
         quantization = config.get("quantization", {})
@@ -77,12 +80,14 @@ class MainTrainer():
                 trust_remote_code=trust_remote_code,
                 quantization_config=quantization_config,
                 config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+                device_map='auto'
             )
         else:  # 양자화가 비활성화된 경우
             model = AutoModelForCausalLM.from_pretrained(
                 model_name,
                 trust_remote_code=trust_remote_code,
                 config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+                device_map='auto'
             )
             
         # PEFT 설정
@@ -97,7 +102,13 @@ class MainTrainer():
                 bias=peft["bias"]
             )
             model = get_peft_model(model, lora_config)
-        
+            
+            
+        print("Model config:", model.config)
+        print("Model architecture:", model.config.architectures)
+        print(model.hf_device_map) 
+        for name, param in model.named_parameters():
+            print(f"{name}: {param.dtype}")
         return model
 
     
@@ -142,6 +153,9 @@ class MainTrainer():
         )
     
     def get_sft_config(self, config):
+        ds_conf = None
+        if config.get("deepspeed", False):
+            ds_conf=os.join(CONFIG_DIR, config["deepspeed"]["config"])
         return SFTConfig(
         output_dir=OUTPUT_DIR,
         per_device_train_batch_size=config["batch_size"]["train"],
@@ -154,5 +168,6 @@ class MainTrainer():
         eval_strategy=config["eval_strategy"],
         save_total_limit=config["save_total_limit"],
         fp16=config["fp16"],
+        deepspeed=ds_conf
         )
         
