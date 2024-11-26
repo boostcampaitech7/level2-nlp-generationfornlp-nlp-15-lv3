@@ -18,16 +18,13 @@ model:
       {% for message in messages %}{% set content = message['content'] %}
       {% if message['role'] == 'user' %}{{ '<start_of_turn>user\n' + content + '<end_of_turn>\n<start_of_turn>model\n' }}
       {% elif message['role'] == 'assistant' %}{{ content + '<end_of_turn>\n' }}{% endif %}{% endfor %}
-  peft:
-    enable: true                       # PEFT 활성화 여부
+  peft:   #LoraConfig에 맞춰서 작성할것!
     r: 16                              # LoRA의 랭크
     lora_alpha: 16                     # LoRA 알파 값
     lora_dropout: 0.05                 # LoRA 드롭아웃 비율
     target_modules: ["q_proj", "k_proj"] # PEFT가 적용될 타겟 모듈
     task_type: "CAUSAL_LM"             # PEFT 작업 유형
     bias: "none"                       # 편향
-  deepspeed:
-    config: "ds_config.json"           # Deepspeed 설정 파일
 
 training:
   output_dir: "outputs_gemma"        # 출력 디렉토리 경로
@@ -42,6 +39,7 @@ training:
   eval_strategy: "epoch"             # 평가
   save_total_limit: 2                # 저장할 체크포인트의 최대 개수
   fp16: true                         # Mixed Precision 사용 여부
+  deepspeed: "ds_config.json"           # Deepspeed 설정 파일
 
 data:
   dataset_name: "train.csv"  # 데이터셋 파일명

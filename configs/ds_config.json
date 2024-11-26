@@ -1,6 +1,6 @@
 {
     "zero_optimization": {
-        "stage": 3,
+        "stage": 2,
         "offload_optimizer": {
             "device": "cpu",
             "pin_memory": true
@@ -14,30 +14,15 @@
         "enabled": true
     },
     "optimizer": {
-        "type": "OnebitAdam",
+        "type": "Adam",
         "params": {
-            "lr": 5e-5,
+            "lr": "auto",
             "betas": [0.9, 0.999],
             "eps": 1e-8,
-            "weight_decay": 0.01,
-            "cuda_aware": true,
-            "comm_backend": "nccl"
+            "weight_decay": 0.01
         }
-    },
-    "onebit_adam": {
-        "enabled": true,
-        "communication_dtype": "float16",
-        "reduce_bucket_size": 500000000,
-        "overlap_communication": true,
-        "max_communication_savings_threshold": 0.5
     },
     "gradient_accumulation_steps": 8,
     "train_batch_size": 1,
-    "train_micro_batch_size_per_gpu": 1,
-    "logging": {
-        "level": "INFO",
-        "steps_per_print": 10,
-        "wall_clock_breakdown": true,
-        "dump_state": true,
-      }
+    "train_micro_batch_size_per_gpu": 1
 }

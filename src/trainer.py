@@ -65,10 +65,11 @@ class MainTrainer():
         
         print("loading model")
         
-
+        
         # YAML에서 양자화 설정 가져오기
-        quantization = config.get("quantization", {})
-        if quantization.get("enable", False):  # 양자화가 활성화된 경우
+        #TODO: config 통합
+        quantization = config.get("quantization", None)
+        if quantization is not None:  # 양자화가 활성화된 경우
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=quantization.get("load_in_4bit", True),
                 bnb_4bit_compute_dtype=torch.__dict__.get(quantization.get("bnb_4bit_compute_dtype", "float16")),
@@ -80,6 +81,7 @@ class MainTrainer():
                 trust_remote_code=trust_remote_code,
                 quantization_config=quantization_config,
                 config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+                torch_dtype = 'bfloat16', # bfloat16으로 모델 로딩
                 device_map='auto'
             )
         else:  # 양자화가 비활성화된 경우
@@ -87,28 +89,23 @@ class MainTrainer():
                 model_name,
                 trust_remote_code=trust_remote_code,
                 config={"hidden_activation": "gelu_pytorch_tanh"},  # hidden_activation 명시
+                torch_dtype = 'bfloat16', # bfloat16으로 모델 로딩
                 device_map='auto'
             )
             
         # PEFT 설정
         peft = config.get("peft", {})
-        if peft.get("enable", True):
-            lora_config = LoraConfig(
-                r=peft["r"],
-                lora_alpha=peft["lora_alpha"],
-                lora_dropout=peft["lora_dropout"],
-                target_modules=peft["target_modules"],
-                task_type=peft["task_type"],
-                bias=peft["bias"]
-            )
+        if peft is not None:
+            lora_config = LoraConfig(**peft)
             model = get_peft_model(model, lora_config)
             
-            
+        # 디버그용 출력로그
+        #TODO: REMOVE THIS!
         print("Model config:", model.config)
         print("Model architecture:", model.config.architectures)
         print(model.hf_device_map) 
-        for name, param in model.named_parameters():
-            print(f"{name}: {param.dtype}")
+        '''for name, param in model.named_parameters():
+            print(f"{name}: {param.dtype}")'''
         return model
 
     
@@ -155,7 +152,7 @@ class MainTrainer():
     def get_sft_config(self, config):
         ds_conf = None
         if config.get("deepspeed", False):
-            ds_conf=os.join(CONFIG_DIR, config["deepspeed"]["config"])
+            ds_conf=os.path.join(CONFIG_DIR, config["deepspeed"])
         return SFTConfig(
         output_dir=OUTPUT_DIR,
         per_device_train_batch_size=config["batch_size"]["train"],
@@ -168,6 +165,7 @@ class MainTrainer():
         eval_strategy=config["eval_strategy"],
         save_total_limit=config["save_total_limit"],
         fp16=config["fp16"],
+        gradient_accumulation_steps=4,
         deepspeed=ds_conf
         )
         
