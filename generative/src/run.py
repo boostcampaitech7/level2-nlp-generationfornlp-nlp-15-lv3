@@ -102,17 +102,18 @@ if __name__ == "__main__":
 
         
         print(config)
-        if not config['test_rag']:
-            PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, SYSTEM_PROMPT = get_prediction_prompt()
+        PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, SYSTEM_PROMPT = get_prediction_prompt()
 
-            dp = DataProcessor(config)
-            dp.init()
-            dp.set_system_prompt(SYSTEM_PROMPT)
-            dp.set_user_prompt(PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS)
+        dp = DataProcessor(config)
+        dp.init()
+        dp.set_system_prompt(SYSTEM_PROMPT)
+        dp.set_user_prompt(PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS)
 
-            train_dataset = dp.get_train_dataset()
-            test_dataset = dp.get_test_dataset()
+        train_dataset = dp.get_train_dataset()
+        test_dataset = dp.get_test_dataset()
             
+            
+        if not config['test_rag']:
             model = get_model(config)
             tokenizer = get_tokenizer(config)
             collator = get_collator(config, tokenizer)
