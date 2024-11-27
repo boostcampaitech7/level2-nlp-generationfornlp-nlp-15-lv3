@@ -8,7 +8,7 @@ def load_config(config_path):
         return yaml.safe_load(file)
 
 if __name__ == "__main__":
-    config = load_config(TRAIN_CONFIG)
+    config = load_config(os.path.join(CONFIG_DIR, 'Bllossom-8B_train.yaml'))
     trainer = MainTrainer(config)
     trainer.train()
 
