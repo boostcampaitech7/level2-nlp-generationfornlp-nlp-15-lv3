@@ -55,9 +55,22 @@ def set_seed(random_seed):
 set_seed(42) # magic number :)
 
 
+class CustomHuggingFaceEmbeddings(HuggingFaceEmbeddings):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
+    def embed_documents(self, texts):
+        # 텍스트 토큰화 (token_type_ids 제거)
+        inputs = self.tokenizer(texts, return_tensors="pt", padding=True, truncation=True)
+        if 'token_type_ids' in inputs:
+            inputs.pop("token_type_ids", None)  # token_type_ids 제거
+
+        # 임베딩 생성
+        return self.model(**inputs).last_hidden_state
+    
 class RAG:
     def __init__(self, config=None):
+        self.config = config
         self.documents = []
         self.emb_name = None
         self.emb_model = None
@@ -95,6 +108,7 @@ class RAG:
         self.k = config['k']
 
     def _init_documents(self):
+        """
         wiki = load_dataset("wiki40b", "ko")
         print(wiki)
         #print(eval(wiki['train']['text'][100]).decode('utf8'))
@@ -106,6 +120,28 @@ class RAG:
                 text = text.replace(tag, ' ') 
             documents += [eval(text).decode('utf8')]
 
+        """
+
+        
+        data1 = load_dataset("skt/kobest_v1", "boolq")
+        data2 = load_dataset("maywell/ko_wikidata_QA")
+
+        print(data1)
+        print(data2)
+        documents = []
+
+        c=0
+        for paragraph in data1['train']['paragraph']+data1['validation']['paragraph']+data1['test']['paragraph']:
+           documents += [paragraph]
+           c+=1
+        print('data1 size:', c)
+
+        c=0
+        for paragraph in data2['train']['output']:
+            documents += [paragraph]
+            c+=1
+        print('data2 size:', c) 
+        
         start_time = time.perf_counter()
         self.documents = [Document(page_content=doc.strip()) for doc in documents]
         end_time = time.perf_counter()
@@ -113,11 +149,11 @@ class RAG:
 
     def _init_faiss_store(self):
         start_time = time.perf_counter()
-        self.emb_model = HuggingFaceEmbeddings(model_name=self.emb_name)
+        self.emb_model = HuggingFaceEmbeddings(model_name=self.emb_name,  model_kwargs={'trust_remote_code':True, 'device':self.config['device']},)
 
         if not os.path.exists(self.faiss_folder_path):
             # FAISS index 생성
-            print("creating faiss index")
+            print("creating faiss index by", self.emb_name)
             self.faiss_store = FAISS.from_documents(self.documents, self.emb_model)
             self.faiss_store.save_local(self.faiss_folder_path)
         else:

@@ -39,6 +39,40 @@ test_hint.hint = test_hint.hint.map(lambda hint:translate(hint, 'auto', 'ko') if
 test_hint.to_csv("../data/test_hint_trans.csv", index=False)
 '''
 
-test1 = pd.read_csv("../data/output.csv")
-test2 = pd.read_csv("../data/output_qwen_base.csv")
+test1 = pd.read_csv("../data/output_qwen_base_1126.csv")
+test2 = pd.read_csv("../data/output_qwen_base_1127.csv")
+test3 = pd.read_csv("../data/output_qwen_hint_1126.csv")
+test4 = pd.read_csv("../data/output_qwen_hint_1127.csv")
+test5 = pd.read_csv("../data/output_qwen_base_expected.csv")
+test6 = pd.read_csv("../data/output_qwen_hint_expected.csv")
+test7 = pd.read_csv("../data/output_qwen_base_1127_2.csv")
+
+print("yesterday vs today qwen")
 compare_answer(test1, test2)
+print()
+
+print("today vs today qwen")
+compare_answer(test2, test7)
+print()
+
+
+print("yesterday vs today qwen with hint")
+compare_answer(test3, test4)
+print()
+
+
+print("yesterday qwen vs qwen with hint")
+compare_answer(test1, test3)
+print()
+
+print("today qwen vs qwen with hint")
+compare_answer(test2, test4)
+print()
+
+"""
+print("submitted vs today")
+compare_answer(test2, test5)
+compare_answer(test4, test6)
+print()
+compare_answer(test4, test7)
+"""

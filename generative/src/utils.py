@@ -38,8 +38,8 @@ def compare_answer(df_a, df_b):
     c = 0
     for a, b in zip(df_a.answer, df_b.answer):
         if a==b: c+=1
-    print("each len:", len(df_a.answer), len(df_b.answer))
-    print("& len:", c)
+    print("each count:", len(df_a.answer), len(df_b.answer))
+    print("& count:", c)
 
 def compare_answer_old(df_a, df_b):
     c = 0

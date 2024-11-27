@@ -21,7 +21,7 @@ import yaml
 from huggingface_hub import login
 
 from utils import *
-from trainer import LLM
+from trainer import *
 
 pd.set_option('display.max_columns', None)
 
@@ -44,15 +44,14 @@ set_seed(42) # magic number :)
 
 if __name__ == "__main__":
     config = None
-    with open("../config/model_exp.yaml") as f:
+    with open("../config/model.yaml") as f:
         config = yaml.safe_load(f)
     
-    from trainer import *
 
     print(config)
 
 
-    if config['generate']:
+    if config['task'] == "hint_generation":
         PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, SYSTEM_PROMPT = get_hint_prompt()
 
         dp = DataProcessor(config)
@@ -84,101 +83,102 @@ if __name__ == "__main__":
         torch.cuda.empty_cache()
         print("hint generation done")
 
-    if config['use_hint']:
-        train = pd.read_csv("../data/train.csv")
-        test = pd.read_csv("../data/test.csv")
+    elif config['task'] == "prediction_generation":
+        if config['use_hint']:
+            train = pd.read_csv("../data/train.csv")
+            test = pd.read_csv("../data/test.csv")
 
-        if os.path.isfile("../data/train_hint.csv"):
-            train_hint = pd.read_csv("../data/train_hint.csv")
-            train_hint.hint = train_hint.hint.map(lambda hint:translate(hint, 'auto', 'ko') if 0.0 < calculate_ratio_korean(hint) < 0.3 else hint)
-            merge(train, train_hint).to_csv("../data/train_merge_hint.csv", index=False)
-            config['train_data_file'] = "train_merge_hint.csv"
+            if os.path.isfile("../data/train_hint.csv"):
+                train_hint = pd.read_csv("../data/train_hint.csv")
+                train_hint.hint = train_hint.hint.map(lambda hint:translate(hint, 'auto', 'ko') if 0.0 < calculate_ratio_korean(hint) < 0.3 else hint)
+                merge(train, train_hint).to_csv("../data/train_merge_hint.csv", index=False)
+                config['train_data_file'] = "train_merge_hint.csv"
 
-        if os.path.isfile("../data/test_hint.csv"):
-            test_hint = pd.read_csv("../data/test_hint.csv")
-            test_hint.hint = test_hint.hint.map(lambda hint:translate(hint, 'auto', 'ko') if 0.0 < calculate_ratio_korean(hint) < 0.3 else hint)
-            #test_hint.to_csv("../data/test_hint_trans.csv", index=False)
-            merge(test, test_hint).to_csv("../data/test_merge_hint.csv", index=False)
-            config['test_data_file'] = "test_merge_hint.csv"
+            if os.path.isfile("../data/test_hint.csv"):
+                test_hint = pd.read_csv("../data/test_hint.csv")
+                test_hint.hint = test_hint.hint.map(lambda hint:translate(hint, 'auto', 'ko') if 0.0 < calculate_ratio_korean(hint) < 0.3 else hint)
+                merge(test, test_hint).to_csv("../data/test_merge_hint.csv", index=False)
+                config['test_data_file'] = "test_merge_hint.csv"
 
-    print(config)
+        
+        print(config)
+        
+        PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, SYSTEM_PROMPT = get_prediction_prompt()
 
-    PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, SYSTEM_PROMPT = get_prediction_prompt()
+        dp = DataProcessor(config)
+        dp.init()
+        dp.set_system_prompt(SYSTEM_PROMPT)
+        dp.set_user_prompt(PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS)
 
-    dp = DataProcessor(config)
-    dp.init()
-    dp.set_system_prompt(SYSTEM_PROMPT)
-    dp.set_user_prompt(PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS)
-
-    train_dataset = dp.get_train_dataset()
-    test_dataset = dp.get_test_dataset()
-    
-    model = get_model(config)
-    tokenizer = get_tokenizer(config)
-    collator = get_collator(config, tokenizer)
-
-    if config['use_gradient_checkpointing']:
-        model.gradient_checkpointing_enable()
-
-    llm = LLM(config)
-    llm.set_model(model)
-    llm.set_tokenizer(tokenizer)
-    llm.set_collator(collator)
-    llm.set_train_dataset(tokenize_dataset(tokenizer, train_dataset))
-    llm.set_test_dataset(test_dataset)
-    llm.init()
-
-    if config['train']:
-        llm.train()
-    if config['eval']:
-        llm.evaluate()
-    if config['test']: 
-        llm.test()
-
-    del model
-    del llm
-
-    import gc
-    gc.collect()
-    torch.cuda.empty_cache()
-    print("prediction done")
-
-    if config['use_rag']:
-        from rag import RAG
-        with open('../config/rag_exp.yaml', 'r') as f:
-            config = yaml.safe_load(f)
-        rag = RAG(config)
-        rag.set_prompt(get_rag_prompt())
-        rag.set_combine_docs_chain()
-        rag.set_rag_chain()
-
-
+        train_dataset = dp.get_train_dataset()
+        test_dataset = dp.get_test_dataset()
+        
+        model = get_model(config)
         tokenizer = get_tokenizer(config)
+        collator = get_collator(config, tokenizer)
 
-        infer_results = []
+        if config['use_gradient_checkpointing']:
+            model.gradient_checkpointing_enable()
 
-        with torch.inference_mode():
-            for data in tqdm(test_dataset):
-                _id = data["id"]
-                messages = data["messages"]
-                len_choices = data["len_choices"]
+        llm = LLM(config)
+        llm.set_model(model)
+        llm.set_tokenizer(tokenizer)
+        llm.set_collator(collator)
+        llm.set_train_dataset(tokenize_dataset(tokenizer, train_dataset))
+        llm.set_test_dataset(test_dataset)
+        llm.init()
 
-                input = tokenizer.apply_chat_template(
-                        messages,
-                        tokenize=True,
-                        add_generation_prompt=True,
-                        return_tensors="pt",
-                    ).to("cuda")
-                
-                inputs = tokenizer.batch_decode(input)[0].strip()
+        if config['train']:
+            llm.train()
+        if config['eval']:
+            llm.evaluate()
+        if config['test']: 
+            llm.test()
+            print("prediction done")
+
+        del model
+        del llm
+
+        import gc
+        gc.collect()
+        torch.cuda.empty_cache()
+    
+        if config['test_rag']:
+            from rag import RAG
+            with open('../config/rag.yaml', 'r') as f:
+                config = yaml.safe_load(f)
+            rag = RAG(config)
+            rag.set_prompt(get_rag_prompt())
+            rag.set_combine_docs_chain()
+            rag.set_rag_chain()
 
 
-                outputs = rag.invoke(inputs)["answer"][1]
-                infer_results.append({"id": _id, "answer": remove_not_digital(remove_not_numeric(outputs))})
+            tokenizer = get_tokenizer(config)
 
-        output = pd.DataFrame(infer_results)
-        print(output)
-        output.answer = output.answer.map(lambda x: 0 if x.strip() == "" else x)
-        output.to_csv(config['data_path'] + "/output_rag.csv", index=False)
+            infer_results = []
 
-        print("rag prediction done")
+            with torch.inference_mode():
+                for data in tqdm(test_dataset):
+                    _id = data["id"]
+                    messages = data["messages"]
+                    len_choices = data["len_choices"]
+
+                    input = tokenizer.apply_chat_template(
+                            messages,
+                            tokenize=True,
+                            add_generation_prompt=True,
+                            return_tensors="pt",
+                        ).to("cuda")
+                    
+                    inputs = tokenizer.batch_decode(input)[0].strip()
+
+
+                    outputs = rag.invoke(inputs)["answer"][1]
+                    infer_results.append({"id": _id, "answer": remove_not_digital(remove_not_numeric(outputs))})
+
+            output = pd.DataFrame(infer_results)
+            print(output)
+            output.answer = output.answer.map(lambda x: 0 if x.strip() == "" else x)
+            output.to_csv(config['data_path'] + "/output.csv", index=False)
+
+            print("rag prediction done")

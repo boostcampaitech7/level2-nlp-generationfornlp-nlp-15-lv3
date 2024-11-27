@@ -5,13 +5,13 @@ test_data_file: "test.csv"
 model_path: '../model/'
 output_dir: '../model/'
 
+task: "prediction_generation" # "hint_generation" # "prediction_generation"
 
+generate: False
 train: False
 eval: False
-test: True
-generate: False
-
-task: "prediction_generation" # "hint_generation" # "prediction_generation"
+test: False
+test_rag: True
 
 model_name: "../model/Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4/checkpoint-3654" #"Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int4" #"maywell/EXAONE-3.0-7.8B-Instruct-Llamafied" # "../model/maywell/EXAONE-3.0-7.8B-Instruct-Llamafied_t" # "vennielee/BubbyTalk-EXAONE-3.0-7.8B-v1.0" # "meta-llama/Llama-3.2-1B-Instruct" # "../model/beomi/gemma-ko-2b/checkpoint-3654" # "beomi/gemma-ko-2b" # "meta-llama/Llama-3.2-1B-Instruct" # "../model/meta-llama/Llama-3.2-1B-Instruct/checkpoint-3654" # "../model/beomi/gemma-ko-2b/checkpoint-3654" #"maywell/EXAONE-3.0-7.8B-Instruct-Llamafied"
 device_map: "auto"
@@ -21,11 +21,10 @@ eval_size: 0.1
 learning_rate: 0.00002
 max_seq_length: 9999
 max_new_tokens: 100
-use_gptq: False
-use_gradient_checkpointing: False
-use_mx_fp16: False
-use_fp16: False
-use_bnb: False
+use_gptq: False # not implemented
+use_gradient_checkpointing: False # not used
+use_mx_fp16: False # not used
+use_fp16: False # case by case
+use_bnb: False # for quantization
 use_lora: True
-use_hint: False
-use_rag: False
+use_hint: True # if hint_generation done
