@@ -102,46 +102,46 @@ if __name__ == "__main__":
 
         
         print(config)
-        
-        PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, SYSTEM_PROMPT = get_prediction_prompt()
+        if not config['test_rag']:
+            PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, SYSTEM_PROMPT = get_prediction_prompt()
 
-        dp = DataProcessor(config)
-        dp.init()
-        dp.set_system_prompt(SYSTEM_PROMPT)
-        dp.set_user_prompt(PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS)
+            dp = DataProcessor(config)
+            dp.init()
+            dp.set_system_prompt(SYSTEM_PROMPT)
+            dp.set_user_prompt(PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS)
 
-        train_dataset = dp.get_train_dataset()
-        test_dataset = dp.get_test_dataset()
-        
-        model = get_model(config)
-        tokenizer = get_tokenizer(config)
-        collator = get_collator(config, tokenizer)
+            train_dataset = dp.get_train_dataset()
+            test_dataset = dp.get_test_dataset()
+            
+            model = get_model(config)
+            tokenizer = get_tokenizer(config)
+            collator = get_collator(config, tokenizer)
 
-        if config['use_gradient_checkpointing']:
-            model.gradient_checkpointing_enable()
+            if config['use_gradient_checkpointing']:
+                model.gradient_checkpointing_enable()
 
-        llm = LLM(config)
-        llm.set_model(model)
-        llm.set_tokenizer(tokenizer)
-        llm.set_collator(collator)
-        llm.set_train_dataset(tokenize_dataset(tokenizer, train_dataset))
-        llm.set_test_dataset(test_dataset)
-        llm.init()
+            llm = LLM(config)
+            llm.set_model(model)
+            llm.set_tokenizer(tokenizer)
+            llm.set_collator(collator)
+            llm.set_train_dataset(tokenize_dataset(tokenizer, train_dataset))
+            llm.set_test_dataset(test_dataset)
+            llm.init()
 
-        if config['train']:
-            llm.train()
-        if config['eval']:
-            llm.evaluate()
-        if config['test']: 
-            llm.test()
-            print("prediction done")
+            if config['train']:
+                llm.train()
+            if config['eval']:
+                llm.evaluate()
+            if config['test']: 
+                llm.test()
+                print("prediction done")
 
-        del model
-        del llm
+            del model
+            del llm
 
-        import gc
-        gc.collect()
-        torch.cuda.empty_cache()
+            torch.cuda.empty_cache()
+            import gc
+            gc.collect()
     
         if config['test_rag']:
             from rag import RAG
