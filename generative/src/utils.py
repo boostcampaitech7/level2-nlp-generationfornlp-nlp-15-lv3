@@ -1,6 +1,9 @@
 import pandas as pd
 import re
 
+from langchain.prompts import PromptTemplate
+from googletrans import Translator
+
 korean = r"ㄱ-ㅎㅏ-ㅣ가-힣"
 english = r"a-zA-Z"
 number = r"0-9"
@@ -20,7 +23,25 @@ def remove_not_digital(text):
 def remain_numeric(df_a):
     df_a.answer = df_a.answer.map(remove_not_numeric)
 
+def calculate_ratio_korean(text):
+    length_text = len(text)
+    korean_text = re.sub(f"[^{korean}]", "", text)
+    length_korean_text = len(korean_text)
+    return length_korean_text / length_text
+
+
+def translate(text, src, dest):
+    translator = Translator()
+    return translator.translate(text, src=src, dest=dest).text
+
 def compare_answer(df_a, df_b):
+    c = 0
+    for a, b in zip(df_a.answer, df_b.answer):
+        if a==b: c+=1
+    print("each len:", len(df_a.answer), len(df_b.answer))
+    print("& len:", c)
+
+def compare_answer_old(df_a, df_b):
     c = 0
     for a, b in zip(df_a.answer, df_b.answer):
         if str(b) in a: c+=1
@@ -37,7 +58,8 @@ def check_answer(df):
 def merge(df_a, df_b):
     df = df_a.merge(df_b)
     return df
-    
+
+
 def eval():
     data_path = '../data/'
     train_data_path = data_path + "train.csv"
@@ -147,3 +169,18 @@ def get_hint_prompt():
     PROMPT_SYSTEM = "당신은 전지전능한 신으로 모든 걸 알고 있다. 수능 지문과 질문과 정답이 주어졌을 때, 또는 정답이 없더라도 어떤 정답이 나올 수 있도록 힌트를 작성하라. 바로 본론부터 시작하라."
 
     return PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, PROMPT_SYSTEM
+
+def get_rag_prompt():
+    prompt = PromptTemplate(
+                input_variables = ["context", "input"],
+                template = """
+                    다음 정보를 참고하며 질문에 올바른 정답을 말해라.
+                    정보가 질문과 상관없으면 참고하지 않아도 된다.
+                    
+                    정보 : {context}
+                    
+                    질문 : {input}
+                """
+            )
+
+    return prompt

@@ -6,24 +6,26 @@ model_path: '../model/'
 output_dir: '../model/'
 
 
-train: True
+train: False
 eval: False
 test: True
 generate: False
 
 task: "prediction_generation" # "hint_generation" # "prediction_generation"
 
-model_name: "meta-llama/Llama-3.2-1B-Instruct" # "../model/beomi/gemma-ko-2b/checkpoint-3654" # "beomi/gemma-ko-2b" # "meta-llama/Llama-3.2-1B-Instruct" # "../model/meta-llama/Llama-3.2-1B-Instruct/checkpoint-3654" # "../model/beomi/gemma-ko-2b/checkpoint-3654" #"maywell/EXAONE-3.0-7.8B-Instruct-Llamafied"
+model_name: "../model/Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4/checkpoint-3654" #"Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int4" #"maywell/EXAONE-3.0-7.8B-Instruct-Llamafied" # "../model/maywell/EXAONE-3.0-7.8B-Instruct-Llamafied_t" # "vennielee/BubbyTalk-EXAONE-3.0-7.8B-v1.0" # "meta-llama/Llama-3.2-1B-Instruct" # "../model/beomi/gemma-ko-2b/checkpoint-3654" # "beomi/gemma-ko-2b" # "meta-llama/Llama-3.2-1B-Instruct" # "../model/meta-llama/Llama-3.2-1B-Instruct/checkpoint-3654" # "../model/beomi/gemma-ko-2b/checkpoint-3654" #"maywell/EXAONE-3.0-7.8B-Instruct-Llamafied"
 device_map: "auto"
 batch_size: 1
 num_train_epochs: 2
+eval_size: 0.1
 learning_rate: 0.00002
 max_seq_length: 9999
 max_new_tokens: 100
 use_gptq: False
 use_gradient_checkpointing: False
 use_mx_fp16: False
-use_fp16: True
-use_quant: True
+use_fp16: False
+use_bnb: False
 use_lora: True
-use_hint: True
+use_hint: False
+use_rag: False

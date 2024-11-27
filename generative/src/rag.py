@@ -86,7 +86,7 @@ class RAG:
         self.emb_name = config['emb_name']
         self.faiss_folder_path = config['faiss_folder_path']
 
-        self.llm_name = config['llm_name']
+        self.llm_name = config['model_name'] #config['llm_name']
         self.task = config['task']
         self.batch_size = config['batch_size']
         self.device_map = config['device_map']
@@ -159,7 +159,7 @@ class RAG:
             self.retrieval_qa_chat_prompt = prompt
         else:
             self.retrieval_qa_chat_prompt = PromptTemplate(
-                input_variables = ["context", "query"],
+                input_variables = ["context", "input"],
                 template = """
                     다음 정보를 참고하며 질문에 올바른 정답을 말해라.
                     
@@ -176,20 +176,6 @@ class RAG:
                 """
             )
 
-            '''
-            PROMPT_NO_QUESTION_PLUS = """지문:
-            {paragraph}
-
-            질문:
-            {question}
-
-            선택지:
-            {choices}
-
-            1, 2, 3, 4, 5 중에 하나를 정답으로 고르세요.
-            정답:"""
-            '''
-    
     def set_combine_docs_chain(self, llm=None, prompt=None):
         if llm:
             self.llm=llm
@@ -215,12 +201,12 @@ class RAG:
             
 
     def invoke(self, query):
-        return self.rag_chain.invoke({"input": query})['answer']
+        return self.rag_chain.invoke({"input": query})
         
     def print_invoke(self, query):
         start_time = time.perf_counter()
         #query = ["test1", "test2"] #"이 질문은 다음 정보를 참조한다. 텡크테리족의 등장 이전에는 브루크테리족이 등장했지만, 현재 일반적으로는 차마비족과 앙그리바리족이 그들의 정착지에 들어가 쫓아낸 이후 [이웃] 부족의 도움으로 그들을 완전히 절멸시켰다고 여겨진다. 이들은 폭정에 대항하고자 행동했거나 약탈의 유혹 때문에, 또는 하늘의 [호의적인] 뜻에 따라 행동했던 것이다. 갈등의 광경으로 인한 원한은 일어나지도 않았다. 6만 명이 넘는 목숨이 로마의 병력과 무기 아래 쓰러진 것이 아니라 훨씬 더 거대한 것을 위해 위해 기꺼이 스러졌다. 부디 부족들이 우리에 대한 사랑은 아니더라도 서로에 대한 증오는 항상 간직하기를 기도한다. 운명은 제국의 손에 의해 우리가 몰락하게 만들었지만, 운명이 가져오는 적들 사이의 불화만큼 더 큰 축복은 존재하지 않기 때문이다.” 게르만족의 기원과 현황, 타키투스, 기원후 98년 경. 다음 중 로마 제국의 쇠퇴에 가장 적게 기여한 것은 무엇인가?', 'choices': ['왕좌를 노리고 벌어진 라이벌 간의 내전', '야만인 민족의 제국 침입', '제국의 정부 기관으로서 원로원의 지속성', '질병과 전염병으로 인한 인구학적 취약성']," #"소련이 한국에 진입하게 만든 당 시대의 세계사적 사건은?" #"이인은 선왕에게 제사를 드리고, 현왕을 할아버지의 사당 앞에 경건하게 바쳤다. . . . 이인은 이어서 어린 왕에게 교훈을 주기 위해 공덕조의 덕을 분명히 설명했다. 오! 옛날 하나라의 선왕들은 덕을 열심히 쌓았고, 그때는 하늘에서 재앙이 내리지 않았습니다. 산과 강의 정령들은 모두 고요했고, 새와 짐승들은 타고난 본성에 따라 존재 자체를 즐겼습니다. 그러나 후손들은 선대의 본보기를 따르지 않았고, 하늘은 총애하는 통치자를 이용하여 재앙을 내렸습니다. 하나라에 대한 공격은 명조의 난교에서 그 원인을 찾을 수 있습니다. 상나라의 왕은 현자와도 같은 능력을 눈부시게 펼쳤습니다. 압제가 아닌 너그러운 온화함으로 지배했기 때문입니다. 이제 폐하꼐서는 자신의 덕을 계승하고자 합니다. 모든 것은 통치를 어떻게 시작하느냐에 달렸습니다. “오! 선왕께서는 사람들을 하나로 묶는 유대감에 세심하게 주의를 기울이는 것으로 통치를 시작하셨나이다… 이러한 경고를 항상 염두에 두소서… 하늘의 길은 변함이 없습니다. 선행을 하면 축복을 내리고 악행을 하면 불행을 내립니다. 폐하께서 크든 작든 공덕을 쌓지 않으시면 조상들이 가꿔 온 왕조에 파멸을 불러 올 것입니다.” —기원전 6세기 중국 서경에서 발췌 및 각색 다음 중 도교 신앙의 뿌리라고 볼 수 있는 것은?'"
-        result = self.rag_chain.invoke({"input": query})
+        result = self.rag_chain.invoke({"query": query})
         print("query:", query)
         print("answer:", result['answer'])
         end_time = time.perf_counter()

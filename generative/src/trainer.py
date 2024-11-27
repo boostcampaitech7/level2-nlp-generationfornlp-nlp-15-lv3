@@ -24,7 +24,8 @@ from peft import (
     TaskType,
     PeftModel
 )
-from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
+
+# from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
 
 
 import os
@@ -69,6 +70,14 @@ def get_model(config):
         bnb_4bit_use_double_quant=True, # 이중 양자화: 양자화를 적용하는 정수에 대해서도 양자화 적용
         bnb_4bit_compute_dtype=torch.bfloat16 # 연산 속도를 높이기 위해 사용 (default: torch.float32)
     )
+
+        # NF4 양자화를 위한 설정
+    quantization_config = BitsAndBytesConfig(
+        load_in_8bit=True, # 모델을 4비트 정밀도로 로드
+        bnb_4bit_quant_type="nf4", # 4비트 NormalFloat 양자화: 양자화된 파라미터의 분포 범위를 정규분포 내로 억제하여 정밀도 저하 방지
+        bnb_4bit_use_double_quant=True, # 이중 양자화: 양자화를 적용하는 정수에 대해서도 양자화 적용
+        bnb_4bit_compute_dtype=torch.bfloat16 # 연산 속도를 높이기 위해 사용 (default: torch.float32)
+    )
     
     if config['use_gptq']:
         """
@@ -76,6 +85,8 @@ def get_model(config):
         quantize_config = BaseQuantizeConfig(bits=4, group_size=128)
 
         model = AutoGPTQForCausalLM.from_pretrained(config['model_name'], quantize_config=quantize_config)
+        """
+
         """
         model_id = config['model_name']
         tokenizer = AutoTokenizer.from_pretrained(model_id)
@@ -86,26 +97,35 @@ def get_model(config):
             torch_dtype=torch.float16 if config['use_fp16'] else torch.float32,
             device_map=config['device_map'], 
             quantization_config=quantization_config)
-        print("AutoGPTQForCausalLM")
+        """
+        
+        quantization_config = GPTQConfig(bits=4, disable_exllama=False)
+        model = AutoModelForCausalLM.from_pretrained(config['model_name'],quantization_config=quantization_config, device_map="auto")
+        model.gradient_checkpointing_enable()
+
+        print("set GPTQ")
     else:
+        kwargs = {
+            "trust_remote_code":True,
+            "device_map":config["device_map"],
+        }
+
+        if config['use_fp16']:
+            kwargs['torch_dtype']=torch.float16
+        if config['use_bnb']:
+            kwargs['quantization_config']=quantization_config
+
         try:
             model = AutoPeftModelForCausalLM.from_pretrained(
                 config["model_name"],
-                trust_remote_code=True,
-                torch_dtype=torch.float16 if config['use_fp16'] else torch.float32,
-                device_map=config["device_map"],
-                quantization_config=quantization_config if config['use_quant'] else None,
-                #load_in_4bit=True,
+                **kwargs
             )
             print("AutoPeftModelForCausalLM")
         except:
+            
             model = AutoModelForCausalLM.from_pretrained(
                 config["model_name"],
-                trust_remote_code=True,
-                torch_dtype=torch.float16 if config['use_fp16'] else torch.float32,
-                device_map=config["device_map"],
-                quantization_config=quantization_config if config['use_quant'] else None,
-                #load_in_4bit=True,
+                **kwargs
             )
             print("AutoModelForCausalLM")
     
@@ -480,6 +500,7 @@ class LLM:
         self.lora_config = None
         self.sft_config = None
         self.trainer = None
+        self.dtype = None
 
         # metric 로드
         self.acc_metric = evaluate.load("accuracy")
@@ -518,6 +539,7 @@ class LLM:
 
     def set_model(self, model):
         self.model = model
+        self.dtype = next(model.parameters()).dtype
     
     def set_tokenizer(self, tokenizer):
         self.tokenizer = tokenizer
@@ -604,7 +626,7 @@ class LLM:
     def _init_train_dataset(self):
         # vram memory 제약으로 인해 인풋 데이터의 길이가 1024 초과인 데이터는 제외하였습니다. *힌트: 1024보다 길이가 더 긴 데이터를 포함하면 더 높은 점수를 달성할 수 있을 것 같습니다!
         #tokenized_dataset = tokenized_dataset.filter(lambda x: len(x["input_ids"]) > 1200) #max_seq_length) #1024)  
-        dataset = self.train_dataset.train_test_split(test_size=0.1, seed=42)
+        dataset = self.train_dataset.train_test_split(test_size=self.config['eval_size'], seed=42)
         self.train_dataset = dataset['train']
         self.eval_dataset = dataset['test']
     
