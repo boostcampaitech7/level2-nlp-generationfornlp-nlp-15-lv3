@@ -7,3 +7,7 @@
 /.nv
 /.vscode
 /data
+
+__pycache__
+output
+model/
