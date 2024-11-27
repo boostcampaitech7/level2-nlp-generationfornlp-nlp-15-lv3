@@ -268,6 +268,7 @@ class DataProcessor:
                 'answer': problems.get('answer', None),
                 "question_plus": problems.get('question_plus', None),
                 "hint": row.get('hint', None),
+                "class": row.get('class', None)
             }
 
             records.append(record)
@@ -343,6 +344,7 @@ class DataProcessor:
                         {"role": "assistant", "content": f"{dataset[i]['answer']}"}
                     ],
                     "label": dataset[i]["answer"],
+                    "class": dataset[i]["class"],
                 }
             )
 
@@ -388,6 +390,7 @@ class DataProcessor:
                     ],
                     "label": row["answer"],
                     "len_choices": len_choices,
+                    "class": row["class"],
                 }
             )
         
@@ -726,6 +729,7 @@ class LLM:
         self.model.eval()
         with torch.inference_mode():
             for data in tqdm(self.test_dataset):
+                if "class" in data and data["class"] == 0:print("trainer) class 0 skip");continue
                 _id = data["id"]
                 messages = data["messages"]
                 len_choices = data["len_choices"]
@@ -755,7 +759,13 @@ class LLM:
         output = pd.DataFrame(infer_results)
         print(output)
         output.answer = output.answer.map(lambda x: 0 if x.strip() == "" else x)
-        output.to_csv(self.data_path + "output.csv", index=False)
+        output_name = "output.csv"
+        if self.config['task'] == "question_classification":
+            output = output.rename(columns={'answer': 'class'})
+            output_name = "output_cls.csv"
+        if self.config['task'] == "prediction_generation":
+            output_name = "output_test.csv"
+        output.to_csv(self.data_path + output_name, index=False)
 
     def generate(self, data_path=None, dataset=None):
         model = self.model

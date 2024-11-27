@@ -71,6 +71,44 @@ def eval():
 
     print(dataset)
 
+def get_classification_prompt():
+    PROMPT_NO_QUESTION_PLUS = """
+        지문과 질문과 선택지를 읽고 해당 문제가 수능에서 국어와 관련 있는 문제인지 분류하세요.
+        만약 국어와 관련 있는 문제라면 1, 아니라면 0을 출력하세요.
+    
+        지문:
+        {paragraph}
+
+        질문:
+        {question}
+
+        선택지:
+        {choices}
+
+        분류:"""
+
+    PROMPT_QUESTION_PLUS = """
+        지문과 질문과 선택지를 읽고 해당 문제가 수능에서 국어와 관련 있는 문제인지 분류하세요.
+        만약 국어와 관련 있는 문제라면 1, 아니라면 0을 출력하세요.
+        
+        지문:
+        {paragraph}
+
+        질문:
+        {question}
+
+        <보기>:
+        {question_plus}
+
+        선택지:
+        {choices}
+
+        분류:"""
+    
+    PROMPT_SYSTEM = "당신은 전지전능한 신으로 모든 걸 알고 있다. 수능 지문과 질문과 선택지가 주어졌을 때, 해당 문제가 수능에서 국어와 관련 있는 문제인지 분류하라. 바로 본론부터 시작하라."
+
+    return PROMPT_NO_QUESTION_PLUS, PROMPT_QUESTION_PLUS, PROMPT_SYSTEM
+
 def get_prediction_prompt():
     PROMPT_NO_QUESTION_PLUS = """
         지문:
