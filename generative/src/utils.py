@@ -179,8 +179,7 @@ def get_rag_prompt():
                     
                     정보 : {context}
                     
-                    질문 : {input}
-                """
+                    질문 : {input}"""
             )
 
     return prompt

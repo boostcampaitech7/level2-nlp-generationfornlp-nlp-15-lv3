@@ -172,9 +172,8 @@ if __name__ == "__main__":
                         ).to("cuda")
                     
                     inputs = tokenizer.batch_decode(input)[0].strip()
-
-
                     outputs = rag.invoke(inputs)["answer"][1]
+                    
                     infer_results.append({"id": _id, "answer": remove_not_digital(remove_not_numeric(outputs))})
 
             output = pd.DataFrame(infer_results)
