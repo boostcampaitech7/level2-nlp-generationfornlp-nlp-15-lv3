@@ -27,9 +27,10 @@ from utils import *
 
 pd.set_option('display.max_columns', None)
 
-with open("../.env", "r") as f:
-    token = f.read().strip() 
-os.environ['HUGGINGFACE_TOKEN'] = token
+if os.path.isfile("../.env"):
+    with open("../.env", "r") as f:
+        token = f.read().strip() 
+    os.environ['HUGGINGFACE_TOKEN'] = token
 
 # %%
 # 난수 고정
