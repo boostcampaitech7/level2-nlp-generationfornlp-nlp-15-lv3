@@ -20,8 +20,10 @@ import yaml
 
 from huggingface_hub import login
 
-from utils import *
+from preprocessing import *
 from trainer import *
+from utils import *
+
 
 pd.set_option('display.max_columns', None)
 
@@ -150,10 +152,12 @@ if __name__ == "__main__":
         test_dataset = dp.get_test_dataset()
             
             
-        if not config['test_rag']:
+        if not config['use_rag']:
             model = get_model(config)
             tokenizer = get_tokenizer(config)
             collator = get_collator(config, tokenizer)
+
+            
 
             if config['use_gradient_checkpointing']:
                 model.gradient_checkpointing_enable()
@@ -181,7 +185,7 @@ if __name__ == "__main__":
             import gc
             gc.collect()
     
-        if config['test_rag']:
+        if config['use_rag']:
             from rag import RAG
             with open('../config/rag.yaml', 'r') as f:
                 config = yaml.safe_load(f)
@@ -232,12 +236,13 @@ if __name__ == "__main__":
             c=0
             results = []
             for id_ in test.id:
-                if id_ in pred.id.values:
-                    results += [{"id": id_, "answer": pred[pred.id == id_].values[0][1]}]
-                    c+=1
-                elif id_ in rag.id.values:
+                if id_ in rag.id.values:
                     results += [{"id": id_, "answer": rag[rag.id == id_].values[0][1]}]
                     c+=1
+                elif id_ in pred.id.values:
+                    results += [{"id": id_, "answer": pred[pred.id == id_].values[0][1]}]
+                    c+=1
+
             print(c)
 
             output = pd.DataFrame(results)

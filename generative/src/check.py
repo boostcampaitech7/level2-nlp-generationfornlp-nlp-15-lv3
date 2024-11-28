@@ -94,7 +94,7 @@ test = pd.read_csv("../data/test.csv")
 merge(test, cls).to_csv("../data/test.csv", index=False)
 """
 
-
+"""
 if os.path.isfile("../data/test.csv") and os.path.isfile("../data/output_test.csv") and os.path.isfile("../data/output_rag.csv"):
     test = pd.read_csv("../data/test.csv")
     pred = pd.read_csv("../data/output_test.csv")
@@ -117,3 +117,32 @@ if os.path.isfile("../data/test.csv") and os.path.isfile("../data/output_test.cs
         output = pd.DataFrame(results)
         print(output)
         output.to_csv("../data/output_final.csv", index=False)
+"""
+"""
+if os.path.isfile("../data/test.csv") and os.path.isfile("../data/output_test.csv") and os.path.isfile("../data/output_rag.csv"):
+    test = pd.read_csv("../data/test.csv")
+    pred = pd.read_csv("../data/output_test.csv")
+    rag = pd.read_csv("../data/output_rag.csv")
+
+    if (len(set(test.id)) != len(set(pred.id) | set(rag.id))) and (len(set(test.id)) == len(set(pred.id)) + len(set(rag.id))):
+        print("test, pred, rag data size not matched")
+    else:
+        c=0
+        results = []
+        for id_ in test.id:
+            if id_ in rag.id.values:
+                results += [{"id": id_, "answer": rag[rag.id == id_].values[0][1]}]
+                c+=1
+            elif id_ in pred.id.values:
+                results += [{"id": id_, "answer": pred[pred.id == id_].values[0][1]}]
+                c+=1
+
+        print(c)
+
+        output = pd.DataFrame(results)
+        print(output)
+        output.to_csv("../data/output_final.csv", index=False)
+"""
+test = pd.read_csv("../data/output_test.csv")
+test1 = pd.read_csv("../data/output_final.csv")
+compare_answer(test, test1)

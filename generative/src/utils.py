@@ -59,7 +59,6 @@ def merge(df_a, df_b):
     df = df_a.merge(df_b)
     return df
 
-
 def eval():
     data_path = '../data/'
     train_data_path = data_path + "train.csv"
