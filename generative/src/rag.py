@@ -37,10 +37,6 @@ import sentence_transformers
 
 pd.set_option('display.max_columns', None)
 
-with open("../.env", "r") as f:
-    token = f.read().strip() 
-os.environ['HUGGINGFACE_TOKEN'] = token
-
 # %%
 # 난수 고정
 def set_seed(random_seed):
