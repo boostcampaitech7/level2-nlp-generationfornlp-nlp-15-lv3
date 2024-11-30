@@ -7,7 +7,7 @@ Upper is mid score
 
 Lower is final score
 
-### baseline
+### Baseline
 
 <img src='./images/baseline.png' height='128'>
 
