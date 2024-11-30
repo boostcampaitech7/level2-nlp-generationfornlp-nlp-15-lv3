@@ -11,6 +11,10 @@ Lower is final score
 
 <img src='./images/baseline.png' height='128'>
 
+### Qwen-32B(int4)
+
+<img src='./images/qwen.png' height='128'>
+
 ### Qwen-32B(int4) + test_hint(Qwen-32B)
 
 <img src='./images/hint.png' height='128'>
