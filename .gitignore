@@ -10,4 +10,6 @@
 
 __pycache__
 output
+outputs
+outputs_gemma
 model/
