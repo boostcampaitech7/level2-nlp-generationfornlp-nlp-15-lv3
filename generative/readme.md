@@ -2,6 +2,8 @@
 ## Performance
 ### Metrics 
 Accuracy
+Upper is mid score
+Lower is final score
 
 ### baseline
 
