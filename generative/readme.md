@@ -7,9 +7,13 @@ Accuracy
 
 <img src='./images/baseline.png' height='128'>
 
-### mine
+### Qwen-32B(int4) + test_hint(Qwen-32B)
 
-<img src='./images/mine.png' height='128'>
+<img src='./images/hint.png' height='128'>
+
+### Qwen-32B(int4) + test_hint(Qwen-32B) + RAG
+
+<img src='./images/rag.png' height='128'>
 
 ## Usage
 ### Requirements
@@ -21,10 +25,4 @@ pip install -r requirements.txt
 ```bash
 cd ./src
 python run.py
-```
-
-### Config
-```
-
-
 ```
