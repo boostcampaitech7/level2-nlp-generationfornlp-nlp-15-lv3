@@ -11,7 +11,7 @@ Accuracy
 
 <img src='./images/hint.png' height='128'>
 
-### Qwen-32B(int4) + test_hint(Qwen-32B) + RAG
+### Qwen-32B(int4) + test_hint(Qwen-32B) + RAG(KoELECTRA)
 
 <img src='./images/rag.png' height='128'>
 
