@@ -100,15 +100,17 @@ TODO
 ## 실험 환경 및 하드웨어
 
 ### 컴퓨팅 자원
-- **aistage V100 서버**: 주로 훈련과 대규모 실험을 수행하며, 제한된 자원 내에서 효율적인 자원 활용을 위한 배치 실험 진행. 총 4대 분산
-    -**GPU (NVIDIA V100)**
-    - 
+
+- **aistage docker server**: 훈련과 대규모 실험을 수행하며, 제한된 자원 내에서 효율적인 자원 활용을 위해 분산 실험 진행. 총 4대.
+    - GPU : NVIDIA V100 32GB
+    - HDD : 100GB
 
 ### 소프트웨어 환경
 
-- **Python 3.1**: 모든 코드 구현의 기본 환경.
-- **PyTorch 1.10**: Dense Embedding과 Reader 모델 구현에 사용.
-- **Hugging Face Datasets & Tokenizers**: 데이터 로드 및 전처리, 토크나이징 도구.
+- **Python 3.10**
+- **PyTorch 2.5**
+- **HuggingFace**
+- **LangChain**
 - **DVC**
 
 ## 실험 결과 데이터
