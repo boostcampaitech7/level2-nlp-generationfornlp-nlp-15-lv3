@@ -1,0 +1,14 @@
+documents: []
+emb_name: "sentence-transformers/all-mpnet-base-v2" #"monologg/koelectra-small-v3-discriminator"  # "sentence-transformers/all-mpnet-base-v2" # "monologg/koelectra-base-v3-discriminator" 
+device: 'cuda'
+faiss_folder_path: "../data/faiss_index_mpnet_base"
+
+model_name: "../model/Qwen/Qwen2.5-32B-Instruct-GPTQ-Int4/checkpoint-3654"
+task: "text-generation"
+batch_size: 1
+device_map: "auto"
+max_new_tokens: 2
+use_hint: True
+k: 1
+
+data_path: "../data/"

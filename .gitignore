@@ -9,5 +9,7 @@
 /data
 
 __pycache__
-outputs_gemma
+output
 outputs
+outputs_gemma
+model/
