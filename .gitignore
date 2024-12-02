@@ -1,0 +1,15 @@
+/.bash_history
+/.cache
+/.conda
+/.config
+/.ipython
+/.local
+/.nv
+/.vscode
+/data
+
+__pycache__
+output
+outputs
+outputs_gemma
+model/
