@@ -9,4 +9,12 @@ evaluate
 peft
 dvc
 dvc-gdrive
+optimum
+auto-gptq
 bitsandbytes
+langchain
+langchain-community
+langchain-huggingface
+sentence-transformers
+faiss-gpu
+googletrans==4.0.0-rc1
