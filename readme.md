@@ -63,18 +63,33 @@ TODO
 
 ## 프로젝트 아키텍쳐
 TODO
-### 프로젝트 구조
-프로젝트의 디렉토리 구조는 다음과 같이 설계되었습니다.
 
-```text
-```
 
 ## 프로젝트 결과
- TODO
 
-## Getting Started
- TODO
+### Baseline
 
+<img src='./generative/images/baseline.png' height='128'>
+
+### Mid
+
+<img src='./generative/images/mid.png' height='128'>
+
+### Final
+
+<img src='./generative/images/final.png' height='128'>
+
+## Usage
+### Requirements
+```bash
+pip install -r requirements.txt
+```
+
+### Command
+```bash
+cd ./src
+python run.py
+```
 
 # Appendix
 ## 개발 환경
@@ -99,8 +114,5 @@ TODO
 - **Notion**: 팀 회의록, 실험 결과 기록, 프로젝트 진행 상황 문서화에 사용.
 - **Slack & Zoom**: 팀원 간의 원활한 커뮤니케이션 및 화상 회의 도구.
 - **pre-commit**: 코드 품질 유지와 자동화된 검사를 위해 사용. 코드 스타일 검사, 포맷팅, 정적 분석 등을 Git 커밋 단계에서 실행하여 일관성을 유지.
-
-## 프로젝트 결과
-TODO
 
 ## 추가 참고 문헌 및 자료
