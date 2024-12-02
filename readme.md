@@ -88,7 +88,7 @@ python run.py
 # Appendix
 ## 개발 환경
 ### 하드웨어
-- **aistage docker container**: 훈련과 대규모 실험을 수행하며, 제한된 자원 내에서 효율적인 자원 활용을 위해 분산 실험 진행. 총 4대.
+- **aistage docker server**: 훈련과 대규모 실험을 수행하며, 제한된 자원 내에서 효율적인 자원 활용을 위해 분산 실험 진행. 총 4대.
     - GPU : NVIDIA V100 32GB
     - HDD : 100GB
 
