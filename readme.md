@@ -61,7 +61,7 @@
 - **Model Merging**
 
 ## 프로젝트 아키텍쳐
-Quantization, Hint Generation, RAG, Model Merging, Question Classification
+Quantization, Hint Generation, Model Merging, Question Classification, RAG 
 
 ## 프로젝트 결과
 ### Baseline
