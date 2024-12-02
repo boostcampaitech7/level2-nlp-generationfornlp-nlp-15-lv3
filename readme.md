@@ -51,31 +51,10 @@
 <table style="width: 100%; text-align: center;">
   <tr>
     <th><a href="https://github.com/privetin">김정석</a></th>
-    <th><a href="https://github.com/WHY1862">원호영</a></th>
-    <th><a href="https://github.com/son0179">손익준</a></th>
-    <th><a href="https://github.com/LeSaUi">이상의</a></th>
     <th><a href="https://github.com/jduck301">서재덕</a></th>
-  </tr>
-  <tr>
-    <td style="text-align: center; vertical-align: middle;"><img src="./docs/image/README/꼬부기1.png" alt="꼬부기1" width="100" height="100"></td>
-    <td style="text-align: center; vertical-align: middle;"><img src="./docs/image/README/꼬부기2.png" alt="꼬부기2" width="100" height="100"></td>
-    <td style="text-align: center; vertical-align: middle;"><img src="./docs/image/README/꼬부기3.png" alt="꼬부기3" width="100" height="100"></td>
-    <td style="text-align: center; vertical-align: middle;"><img src="./docs/image/README/꼬부기4.png" alt="꼬부기4" width="100" height="100"></td>
-    <td style="text-align: center; vertical-align: middle;"><img src="./docs/image/README/꼬부기6.png" alt="꼬부기6" width="100" height="100"></td>
-  </tr>
-  <tr>
-    <td> </td>
-    <td> </td>
-    <td> </td>
-    <td> </td>
-    <td>오리는 꽥꽥 재덕</td>
-  </tr>
-   <tr>
-    <td> </td>
-    <td> </td>
-    <td> </td>
-    <td> </td>
-    <td> </td>
+    <th><a href="https://github.com/son0179">손익준</a></th>
+    <th><a href="https://github.com/WHY1862">원호영</a></th>
+    <th><a href="https://github.com/LeSaUi">이상의</a></th>
   </tr>
 </table>
 
