@@ -37,12 +37,6 @@
 }
 
 ```
-## 📆세부일정
-
-#### 공통
-
-- 프로젝트 기간(2주) : 11.13(수) ~ 11.28(목)
-- 강의 수강 및 과제 진행: 11.11(월) ~ 11.14(목)
 
 ## 😁팀소개
 
@@ -56,6 +50,10 @@
   </tr>
 </table>
 
+## 📆세부일정
+- 프로젝트 기간(2주) : 11.13(수) ~ 11.28(목)
+- 강의 수강 및 과제 진행: 11.11(월) ~ 11.14(목)
+
 ## 프로젝트 주요 모듈
 - **Quantization**
 - **Prompt Engineering**
@@ -66,17 +64,13 @@
 Quantization, Hint Generation, RAG, Model Merging, Question Classification
 
 ## 프로젝트 결과
-
 ### Baseline
-
 <img src='./generative/images/baseline.png' height='128'>
 
 ### Mid
-
 <img src='./generative/images/mid.png' height='128'>
 
 ### Final
-
 <img src='./generative/images/final.png' height='128'>
 
 ## Usage
@@ -94,13 +88,11 @@ python run.py
 # Appendix
 ## 개발 환경
 ### 하드웨어
-
 - **aistage docker server**: 훈련과 대규모 실험을 수행하며, 제한된 자원 내에서 효율적인 자원 활용을 위해 분산 실험 진행. 총 4대.
     - GPU : NVIDIA V100 32GB
     - HDD : 100GB
 
 ### 소프트웨어
-
 - **Python 3.10**
 - **PyTorch 2.5**
 - **HuggingFace**
@@ -109,7 +101,6 @@ python run.py
 - **Jupyter Notebook**
 
 ### 협업 및 프로젝트 관리 도구
-
 - **GitHub**: 코드 버전 관리 및 협업. GitHub Flow를 통해 기능 단위로 브랜치를 관리하고, 코드 리뷰를 진행.
 - **Notion**: 팀 회의록, 실험 결과 기록, 프로젝트 진행 상황 문서화에 사용.
 - **Slack & Zoom**: 팀원 간의 원활한 커뮤니케이션 및 화상 회의 도구.
