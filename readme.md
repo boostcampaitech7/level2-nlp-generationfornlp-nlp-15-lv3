@@ -58,12 +58,14 @@
   </tr>
 </table>
 
-## 프로젝트 수행 절차 및 방법
-TODO
+## 프로젝트 주요 모듈
+- **Quantization**
+- **Prompt Engineering**
+- **RAG**
+- **Model Merging**
 
 ## 프로젝트 아키텍쳐
-TODO
-
+Quantization, Hint Generation, RAG, Model Merging, Question Classification
 
 ## 프로젝트 결과
 
@@ -87,7 +89,7 @@ pip install -r requirements.txt
 
 ### Command
 ```bash
-cd ./src
+cd ./generative/src
 python run.py
 ```
 
