@@ -6,6 +6,7 @@
 - `수능형 문제 풀이 모델 생성` Task.
   - '한국어'와 '시험'이라는 주제에 맞춰서 작은 모델을 제작해 수능 시험을 풀어보는 도전
 - 학습 데이터셋은 `KMMLU / MMMLU(Ko) / KLUE MRC`중 2031개, 평가 데이터는 `수능형 문제 + KMMLU / MMMLU(Ko) / KLUE MRC` 총 869개로 평가 데이터 중 50%만 Public으로 반영 대회 종료 후 Private 점수가 공개됨.
+- [Wrap-Up Report](./lv3_wrapup_report.pdf)
 
 ### 데이터 셋 구조
 #### 헤더와 설명
